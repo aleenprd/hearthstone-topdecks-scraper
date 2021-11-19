@@ -1,0 +1,6 @@
+{
+    "INPUT_PATH": "data/hstd_all_urls.csv",
+    "OUTPUT_PATH": "data/hstp_all_cards.csv",
+    "FAILED_OUTPUT_PATH": "data/hstd_all_failed_card_urls.csv",
+    "SLEEP_TIME": 0
+}

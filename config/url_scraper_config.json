@@ -1,0 +1,5 @@
+{
+    "MAIN_URL": "https://www.hearthstonetopdecks.com/cards/?view=table",
+    "OUTPUT_PATH": "data/hstd_all_urls.csv",
+    "SLEEP_TIME": 0
+}
