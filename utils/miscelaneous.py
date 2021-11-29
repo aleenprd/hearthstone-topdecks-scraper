@@ -5,6 +5,7 @@ import json
 import os
 import sys
 from typing import Dict, List
+import hashlib
 
 
 def read_json_local(path: str):
@@ -68,3 +69,20 @@ def unpack_card_scraper_config(config_options: Dict) -> List:
         sleep_time = config_options["SLEEP_TIME"]
 
     return [input_path, output_path, failed_output_path, sleep_time]
+
+
+def encode_list(lis: str) -> List:
+    """Encode a list of strings."""
+    k = map(lambda x: hashlib.md5(x.encode('utf-8')), lis)
+    k = [x.hexdigest() for x in k]
+
+    return k
+
+
+def decode_hash(orig: List, encr: str) -> str:
+    """Decode an encrypted string back to original."""
+    for i in orig:
+        if i == encr:
+            return i
+        else:
+            return None
