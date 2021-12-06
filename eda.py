@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from typing import List, Dict
 import ast
+import plotly.express as px
 
 # Load dataset
 INPUT_PATH = 'data/hstd_all_cards_merged.csv'
@@ -94,24 +95,51 @@ print(
     f"{cards_df.school.nunique()} spell schools: ",
     np.sort(cards_df.school.unique()))
 
-
+# %%
 # How many card classes?
 # Account for dual-class cards
 # ---------------------- #
 def normalize_card_classes(x):
     if len(x) > 1:
-        return x[0] + '/' + x[1]
+        return x[0] + '-' + x[1]
     else:
         return x[0]
+    
+def flag_dual_class(x):
+    if len(x) > 1:
+        return 1
+    else:
+        return 0
 
 
+# %%
 # The name class conflicts with Python syntax
 cards_df = cards_df.rename({'class': 'card_class'}, axis=1)
-
 cards_df.card_class = cards_df.card_class.apply(lambda x: ast.literal_eval(x))
-res = [normalize_card_classes(x) for x in cards_df.card_class]
 
-# Apply the mapping
+# Apply the normalization mapping
+
+cards_df['dual_class'] = cards_df.card_class.apply(
+    lambda x: flag_dual_class(x))
+
+def get_dual_class_num(x: List, num: int) -> str:
+    return x[num]
+
+dual_class_cards_1 = cards_df[cards_df.dual_class == 1]
+dual_class_cards_1.card_class = dual_class_cards_1.card_class.apply(
+    lambda x: get_dual_class_num(x,0))
+
+dual_class_cards_2 = cards_df[cards_df.dual_class == 1]
+dual_class_cards_2.card_class = dual_class_cards_2.card_class.apply(
+    lambda x: get_dual_class_num(x,1))
+
+def filter_out_dual_clsss_cards(df: pd.DataFrame):
+    return 1
+
+
+# %%
+
+# %%
 cards_df.card_class = cards_df.card_class.apply(
     lambda x: normalize_card_classes(x))
 
@@ -132,6 +160,20 @@ print(
 # ---------------------- #
 print(f"{cards_df.mechanics.nunique()} unique card mechanics combinations.")
 
+
+
+# %%
+# Top and bottom combinations by frequency.
+# ---------------------- #
+top_mechs = cards_df.mechanics.value_counts()
+
+print("\nTop 10 card combinations: ")
+display(top_mechs.head(11))
+
+print("\nBottom 10 card combinations: ")
+display(top_mechs.tail(10))
+
+# %%
 # How many card mechanics?
 # ---------------------- #
 cards_df.mechanics = cards_df.mechanics.apply(lambda x: ast.literal_eval(x))
@@ -154,5 +196,89 @@ try:
     display(cards_df.describe())
 except:
     print(cards_df.describe())
+
+# %%
+# MANA COST DISTRIBUTION
+# ---------------------------------- #
+
+def cost_categorical_bar(
+    df: pd.DataFrame,
+    category_orders: List,
+    )
+# %%
+# Here we use a column with categorical data
+def get_and_sort_int_cats(df: pd.DataFrame, colname: str) -> List:
+    unique_sorted = np.sort(df[colname].unique())
+    unique_sorted = [str(int(x)) for x in unique_sorted]
+    
+    return unique_sorted
+
+unique_mana = get_and_sort_int_cats(cards_df, "cost")
+
+def float_col_to_str(df: pd.DataFrame, colname: str) -> pd.DataFrame:
+    df[colname] = cards_df[colname].astype(str)
+
+# %%
+def mana_by_card_type(
+    df: pd.DataFrame, 
+    main_colname: str, 
+    color_colname: str, 
+    unique: List, 
+    color_pallette: List
+) -> px.histogram:
+    """Make plot."""
+    fig = px.histogram(
+        df,
+        x=main_colname,
+        color=color_colname,
+        category_orders=dict(cost_cat=unique),
+        opacity=1,
+        color_discrete_sequence=color_pallette
+    )
+
+    fig.update_layout(
+        title_text='Distribution of Mana Cost by Card Type', # title of plot
+        xaxis_title_text='Mana Cost', # xaxis label
+        yaxis_title_text='Count', # yaxis label
+        bargap=0.2, # gap between bars of adjacent location coordinates
+        bargroupgap=0.1, # gap between bars of the same location coordinates,
+    )
+
+    fig.show()
+
+card_type_pallette = [
+    px.colors.qualitative.Set3[5],
+    px.colors.qualitative.Set3[4],
+    px.colors.qualitative.Set3[6],
+    px.colors.qualitative.Set3[9],
+]
+    
+mana_by_card_type(cards_df, "cost_cat", "type", unique_mana, card_type_pallette)
+
+
+# %%
+color_palette = [
+    "#513359",  # warlock
+    "#55618d",  # mage
+    "#782318",  # warrior
+    "#a8adb4",  # priest
+    "#725f52",  # neutral
+    "#b07124",  # paladin
+    "#38393f",  # rogue
+    "#2e3561",  # shaman
+    "#633e1e",  # druid
+    "#3e5c1f",  # hunter
+    "#1b3630",  # demon hunter
+]
+unique_card_class = [
+    "Warlock", "Mage", "Warrior", "Priest", "Paladin",
+    "Rogue", "Shaman", "Druid", "Demon Hunter",
+    
+]
+mana_by_card_type(cards_df, "cost_cat", "card_class", unique_mana, color_palette)
+# %%
+# TODO
+# Duplicate the dual class cards
+# flag them as dual class in extra column
 
 # %%
