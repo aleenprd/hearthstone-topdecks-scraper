@@ -10,7 +10,9 @@ from typing import Dict, List
 import numpy as np
 from tqdm import tqdm
 from time import sleep
-import traceback 
+import traceback
+import requests
+import os
 
 
 def make_soup(url: str) -> str:
@@ -228,9 +230,19 @@ def get_comments(soup: BeautifulSoup) -> List:
     return comments
 
 
-def scrape_card(url: str) -> Dict:
+def get_picture(url: str, path: str, file: str):
+    """Download picture from url and save it at location."""
+    img_data = requests.get(url).content
+    output_path = f"{path}/{file}.png"
+    
+    if os.path.exists(output_path):
+        with open(output_path, "wb") as handler:
+            handler.write(img_data)
+
+
+def scrape_card(url: str, download_picture: bool = False, output_path: str = None) -> Dict:
     """
-    Scrape a Hearthstone card of card information.
+    Scrape a Hearthstone card of card information, optionally download picture.
 
     # Example: Spell
     url = "https://www.hearthstonetopdecks.com/cards/bloodlust/"
@@ -248,11 +260,29 @@ def scrape_card(url: str) -> Dict:
     url = "https://www.hearthstonetopdecks.com/cards/runed-mithril-rod/"
     scr.scrape_card(url)
     """
+    if download_picture is True and output_path is None:
+        raise ValueError("Must provide output path to download pictures.")
+
     # Fetch HTML
     soup = make_soup(url)
 
     # Fetch card title
     title = soup.find("h1", {"class": "entry-title"}).text
+
+    # Fetch card picture url
+    try:
+        for data in soup.find_all('div', class_="col-md-10"):
+            for a in data.find_all('a'):
+                picture = a.get('href')
+    except:
+        picture = None
+
+    # Download picture
+    if download_picture and picture is not None:
+        try:
+            get_picture(url=picture, path=output_path, file=title)
+        except:
+            pass
 
     # Retrieve general card info
     general = soup.find("div", {"class": "card-content"}).text
@@ -315,7 +345,9 @@ def scrape_card(url: str) -> Dict:
         # Spell specific features
         "school": school,
         # Weapon specific features
-        "durability": float(durability)
+        "durability": float(durability),
+        # Extras
+        "picture": picture,
     }
 
     return card
@@ -411,7 +443,9 @@ def scrape_card_manually(
         # Spell specific features
         "school": school,
         # Weapon specific features
-        "durability": float(durability)
+        "durability": float(durability),
+        # Extras
+        "picture": picture,
     }
 
     return card
@@ -504,19 +538,20 @@ def parse_query_and_fetch_links(url: str, sleep_time: int) -> List:
     return complete_url_list
 
 
-def scrape_multiple_cards(url_list: List, sleep_time: int) -> List:
+def scrape_multiple_cards(
+    url_list: List, download_picture: bool = False, images_output_path: str = None, sleep_time: int = 0) -> List:
     """Scrape a list of URLs corresponding to cards."""
     # Initialize output
     card_list = []
 
-    # Initialize list of failed scrapes 
-    # for later debugging 
+    # Initialize list of failed scrapes
+    # for later debugging
     failed_card_list = []
 
     # Parse list of links
     for url in tqdm(url_list):
         try:
-            card = scrape_card(url)
+            card = scrape_card(url, download_picture, images_output_path)
             card_list.append(card)
             sleep(sleep_time)
         except Exception:

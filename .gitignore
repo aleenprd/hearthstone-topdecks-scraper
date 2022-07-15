@@ -2,6 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
+src/development_files/
+src/data/images/
+
+# Images
+*.png
+
+# Notebooks
 
 # C extensions
 *.so
