@@ -1,6 +1,8 @@
 {
-    "INPUT_PATH": "data/hstd_all_urls.csv",
-    "OUTPUT_PATH": "data/hstp_all_cards.csv",
-    "FAILED_OUTPUT_PATH": "data/hstd_all_failed_card_urls.csv",
+    "INPUT_PATH": "data/hstd_all_urls_20220715.csv",
+    "OUTPUT_PATH": "data",
+    "DATAFRAME_FILEPATH": "hstd_all_cards_20220715.csv",
+    "FAILED_DATAFRAME_FILEPATH": "hstd_all_failed_cards_20220715.csv",
+    "IMAGES_PATH": "data/images",
     "SLEEP_TIME": 0
 }

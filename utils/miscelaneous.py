@@ -65,10 +65,12 @@ def unpack_card_scraper_config(config_options: Dict) -> List:
         print()
         input_path = config_options["INPUT_PATH"]
         output_path = config_options["OUTPUT_PATH"]
-        failed_output_path = config_options["FAILED_OUTPUT_PATH"]
+        dataframe_filepath = config_options["DATAFRAME_FILEPATH"]
+        failed_dataframe_filepath = config_options["FAILED_DATAFRAME_FILEPATH"]
+        images_path = config_options["IMAGES_PATH"]
         sleep_time = config_options["SLEEP_TIME"]
 
-    return [input_path, output_path, failed_output_path, sleep_time]
+    return [input_path, output_path, dataframe_filepath, failed_dataframe_filepath, images_path, sleep_time]
 
 
 def encode_list(lis: str) -> List:
